@@ -24,7 +24,7 @@ export default async function handler(req, res) {
   }
 
   const form = new IncomingForm();
-  const workingDir = path.join(process.cwd(), 'working_directory');
+  const workingDir = '/tmp/h5p-scorm-converter';
   const uploadTmpDir = path.join(workingDir, 'downloads_tmp');
   const h5pContentBaseDir = path.join(workingDir, 'workspace');
   const tempBaseDir = path.join(workingDir, 'temp');

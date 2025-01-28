@@ -1,0 +1,21 @@
+{
+    "builds": [
+      {
+        "src": "src/index.js",
+        "use": "@vercel/node"
+      }
+    ],
+    "routes": [
+      {
+        "src": "/(.*)",
+        "dest": "src/index.js"
+      },
+      {
+        "src": "/static/(.*)",
+        "headers": {
+          "Cache-Control": "public, max-age=31536000, immutable"
+        },
+        "dest": "static/$1"
+      }
+    ]
+  }
