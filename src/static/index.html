@@ -1,0 +1,106 @@
+<!-- src/static/index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>H5P to SCORM Converter</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body {
+      max-width: 900px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    .custom-file-label::after {
+      content: "Browse";
+    }
+  </style>
+</head>
+<body>
+  <h1 class="mb-4">H5P to SCORM Converter</h1>
+  <form action="/convert" method="post" enctype="multipart/form-data">
+    <div class="form-group">
+      <label for="h5p_file">Upload H5P File</label>
+      <div class="custom-file">
+        <input type="file" class="custom-file-input" id="h5p_file" name="h5p_file" accept=".h5p" required>
+        <label class="custom-file-label" for="h5p_file">Choose H5P file</label>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="h5p_mastery_score">Mastery Score (in percent)</label>
+      <input type="number" class="form-control" id="h5p_mastery_score" name="h5p_mastery_score" min="0" max="100" value="100">
+    </div>
+    <div class="form-group form-check">
+      <input type="checkbox" class="form-check-input" id="terms" name="terms" required>
+      <label class="form-check-label" for="terms"><strong>I accept the Terms and Conditions and understand there is no warranty.</strong></label>
+    </div>
+    <button type="submit" class="btn btn-primary">Convert to SCORM</button>
+  </form>
+
+  <hr>
+
+  <h3>Usage Tips</h3>
+  <p><strong>Advantages:</strong></p>
+  <ul>
+    <li>Use H5P in any LMS that supports SCORM.</li>
+    <li>Scores are reported to the LMS through SCORM.</li>
+    <li>Privacy and availability are managed locally.</li>
+    <li>Access H5P content types not available in your LMS.</li>
+    <li>Content remains unchanged, avoiding issues with H5P updates.</li>
+  </ul>
+  <p><strong>Disadvantages:</strong></p>
+  <ul>
+    <li>No caching benefits for H5P library files, leading to larger package sizes.</li>
+    <li>Cannot use H5P Editor directly within your LMS; requires separate management.</li>
+    <li>No automatic updates to H5P libraries or core.</li>
+    <li>SCORM packages include the h5p-standalone library, increasing size.</li>
+  </ul>
+  <p><strong>Conclusion:</strong> Only use this converter if you have specific reasons and understand the implications. If your LMS supports an H5P module, it's recommended to use that instead.</p>
+
+  <hr>
+
+  <h3>Imprint</h3>
+  <div id="imprint">
+    <!-- Content from static/imprint.html will be injected here -->
+  </div>
+
+  <h3>Privacy Policy</h3>
+  <div id="privacy">
+    <!-- Content from static/privacy.html will be injected here -->
+  </div>
+
+  <h3>Terms and Conditions</h3>
+  <div id="license">
+    <!-- Content from static/license.html will be injected here -->
+  </div>
+
+  <script>
+    // Dynamic injection of static HTML content
+    fetch('/imprint.html')
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById('imprint').innerHTML = data;
+      });
+
+    fetch('/privacy.html')
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById('privacy').innerHTML = data;
+      });
+
+    fetch('/license.html')
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById('license').innerHTML = data;
+      });
+
+    // Update the file input label with the selected file name
+    const fileInput = document.getElementById('h5p_file');
+    fileInput.addEventListener('change', function() {
+      const fileName = this.files[0] ? this.files[0].name : 'Choose H5P file';
+      this.nextElementSibling.innerText = fileName;
+    });
+  </script>
+</body>
+</html>
