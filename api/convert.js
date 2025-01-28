@@ -1,6 +1,6 @@
 // api/convert.js
 
-const { IncomingForm } = require('formidable');
+const formidable = require('formidable');
 const fs = require('fs-extra');
 const path = require('path');
 const decompress = require('decompress');
@@ -12,8 +12,7 @@ const chalk = require('chalk');
 
 export const config = {
   api: {
-    bodyParser: false, // Disables Vercel's default body parser
-    sizeLimit: '50mb', // Adjust based on your requirements
+    bodyParser: false, // Disable Vercel's default body parser
   },
 };
 
@@ -23,12 +22,12 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const form = new IncomingForm();
-  const workingDir = '/tmp/h5p-scorm-converter';
-  const uploadTmpDir = path.join(workingDir, 'downloads_tmp');
-  const h5pContentBaseDir = path.join(workingDir, 'workspace');
-  const tempBaseDir = path.join(workingDir, 'temp');
-  const outputDir = path.join(workingDir, 'output');
+  const form = new formidable.IncomingForm();
+  // Define temporary directories in /tmp (Vercel's writable directory)
+  const uploadTmpDir = path.join('/tmp', 'downloads_tmp');
+  const h5pContentBaseDir = path.join('/tmp', 'workspace');
+  const tempBaseDir = path.join('/tmp', 'temp');
+  const outputDir = path.join('/tmp', 'output');
 
   try {
     // Ensure working directories exist
@@ -76,61 +75,6 @@ export default async function handler(req, res) {
 
     // Prepare SCORM package path
     const scormFilePath = path.join(outputDir, filename);
-
-    // Log successful conversion
-    console.log(
-      `${new Date().toLocaleString()} - Successfully converted file (${h5p_file.originalFilename}, ${filesize(h5p_file.size)}).`
-    );
-
-    // Handle statistics if enabled
-    const USE_STATISTICS = process.env.USE_STATISTICS === 'true';
-    const STATISTICS_FILE = path.resolve(process.env.STATISTICS_FILE || path.join(workingDir, 'logs', 'statistics.csv'));
-
-    if (USE_STATISTICS) {
-      const scormMetadataPath = path.join(workspaceName, 'h5p.json');
-      let contentTypeMachineName = 'unknown';
-      let contentTypeVersion = 'unknown';
-
-      try {
-        const h5pMetadata = await fs.readJSON(path.join(workspaceName, 'h5p.json'));
-        const mainLibrary = h5pMetadata.preloadedDependencies.find(
-          dep => dep.machineName === h5pMetadata.mainLibrary
-        );
-        if (mainLibrary) {
-          contentTypeMachineName = mainLibrary.machineName;
-          contentTypeVersion = `${mainLibrary.majorVersion}.${mainLibrary.minorVersion}`;
-        }
-      } catch (error) {
-        console.error(chalk.red('Could not read H5P metadata:', error));
-      }
-
-      const header = [
-        { id: 'time', title: 'Time' },
-        { id: 'ctMachineName', title: 'Content Type' },
-        { id: 'ctVersion', title: 'Content Type Version' },
-        { id: 'filesize', title: 'Size (in bytes)' }
-      ];
-
-      const csvWriterInstance = csvWriter({
-        append: true,
-        path: STATISTICS_FILE,
-        header
-      });
-
-      if (!(await fs.pathExists(STATISTICS_FILE))) {
-        const csvW = csvWriter.createObjectCsvStringifier({ header });
-        await fs.writeFile(STATISTICS_FILE, csvW.getHeaderString());
-      }
-
-      await csvWriterInstance.writeRecords([
-        {
-          time: new Date().toUTCString(),
-          ctMachineName: contentTypeMachineName,
-          ctVersion: contentTypeVersion,
-          filesize: h5p_file.size
-        }
-      ]);
-    }
 
     // Stream the SCORM package back to the user
     res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
